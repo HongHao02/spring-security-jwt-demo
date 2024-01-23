@@ -14,5 +14,6 @@ public class ResponseObject {
     private String message;
     //Ly do data co kieu la Object do du lieu tra ve co nhieu dang, ta chua biet duoc dang nao
     private Object data;
+
 }
 

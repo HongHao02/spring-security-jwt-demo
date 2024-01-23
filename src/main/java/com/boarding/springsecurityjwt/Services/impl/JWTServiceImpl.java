@@ -1,5 +1,6 @@
 package com.boarding.springsecurityjwt.Services.impl;
 
+import com.boarding.springsecurityjwt.Models.User;
 import com.boarding.springsecurityjwt.Services.JWTService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.function.Function;
 
 /***
@@ -35,6 +37,8 @@ public class JWTServiceImpl implements JWTService {
 
     private Claims extractAllClaims(String token) {
         System.out.println("Extractoken at < " + LocalDateTime.now() + " > " + token);
+        System.out.println("Extractoken secret key at < " + LocalDateTime.now() + " > " + getSignInKey().getAlgorithm() +"_"+ getSignInKey());
+
         return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
     }
 
@@ -49,6 +53,19 @@ public class JWTServiceImpl implements JWTService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
+    @Override
+    public String generateRefreshToken(HashMap<Object, Object> objectObjectHashMap, UserDetails userDetails) {
+        String token = Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 604800000))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+
+        System.out.println("GenerateRefreshToken at < " + LocalDateTime.now() + " > " + token);
+        return token;
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -56,20 +73,6 @@ public class JWTServiceImpl implements JWTService {
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
-
-//    private String generateToken(UserDetails userDetails) {
-//        String token = Jwts.builder()
-//                .setSubject(userDetails.getUsername())
-//                .setIssuedAt(new Date(System.currentTimeMillis()))
-//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-//                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-//                .compact();
-//
-//        System.out.println("GenerateToken at < " + LocalDateTime.now() + " > " + token);
-//        return token;
-//    }
-
-
 
 
     @Override
@@ -90,6 +93,6 @@ public class JWTServiceImpl implements JWTService {
         return token;
     }
     private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode("413F4428472B4B6250655368566D5970337336763979244226452948404D6351"));
     }
 }
