@@ -36,8 +36,8 @@ public class JWTServiceImpl implements JWTService {
     }
 
     private Claims extractAllClaims(String token) {
-        System.out.println("Extractoken at < " + LocalDateTime.now() + " > " + token);
-        System.out.println("Extractoken secret key at < " + LocalDateTime.now() + " > " + getSignInKey().getAlgorithm() +"_"+ getSignInKey());
+//        System.out.println("Extractoken at < " + LocalDateTime.now() + " > " + token);
+//        System.out.println("Extractoken secret key at < " + LocalDateTime.now() + " > " + getSignInKey().getAlgorithm() +"_"+ getSignInKey());
 
         return Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token).getBody();
     }
@@ -62,7 +62,7 @@ public class JWTServiceImpl implements JWTService {
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-        System.out.println("GenerateRefreshToken at < " + LocalDateTime.now() + " > " + token);
+//        System.out.println("GenerateRefreshToken at < " + LocalDateTime.now() + " > " + token);
         return token;
     }
 
@@ -83,9 +83,10 @@ public class JWTServiceImpl implements JWTService {
     @Override
     public String generateToken(UserDetails userDetails) {
         String token = Jwts.builder()
+                .claim("authorities",userDetails.getAuthorities())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + 8000 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
 

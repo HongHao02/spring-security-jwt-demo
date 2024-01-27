@@ -1,10 +1,8 @@
 package com.boarding.springsecurityjwt.Models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,11 +11,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
 @Builder
-@Table (name= "nguoidung")
+@Table(name = "nguoidung")
 @AllArgsConstructor
 @NoArgsConstructor
 
@@ -39,25 +38,32 @@ public class User implements UserDetails {
     private String password;
     private String nickname;
     private String sdt;
-    @Column(name= "first_name")
+    @Column(name = "first_name")
     private String firstName;
-    @Column(name="last_name")
+    @Column(name = "last_name")
     private String lastName;
 
 
-//    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(
-//            name = "user_roles",
-//            joinColumns = @JoinColumn(name = "id"),
-//            inverseJoinColumns = @JoinColumn(name = "idrole"))
-//    private Set<Roles> roles= new HashSet<>();
-    //Custom roles
-    private Roles roles;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "idrole", referencedColumnName = "idrole"))
+    @JsonManagedReference
+    private Set<Role> roles = new HashSet<>();
 
 
+    //Custom roles by using Enum Roles
+//    private Roles roles;
+    /**
+     * Translate Roles to List of SimpleGrantedAuthority
+     * @return
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(roles.name()));
+        return roles.stream().map(
+                role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override

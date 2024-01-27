@@ -1,11 +1,11 @@
 package com.boarding.springsecurityjwt.Configuration;
 
+import com.boarding.springsecurityjwt.Models.Role;
 import com.boarding.springsecurityjwt.Models.Roles;
 import com.boarding.springsecurityjwt.Services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Role;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,8 +33,9 @@ public class SecurityConfiguration {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority(Roles.ADMIN.name())
-                        .requestMatchers("/api/v1/user/**").hasAnyAuthority(Roles.USER.name())
+                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/v1/user/**").hasAnyAuthority("ROLE_USER")
+                        .requestMatchers("/api/v1/post/chutro/create/**").hasAnyAuthority("ROLE_CHUTRO")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
