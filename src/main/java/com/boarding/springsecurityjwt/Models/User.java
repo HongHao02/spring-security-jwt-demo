@@ -12,11 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-@Data
 @Entity
-@Builder
 @Table(name = "nguoidung")
+@Getter
+@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 
@@ -44,25 +44,18 @@ public class User implements UserDetails {
     private String lastName;
 
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_roles",
-            joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "idrole", referencedColumnName = "idrole"))
+            joinColumns = {@JoinColumn(name = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "idrole")})
     @JsonManagedReference
     private Set<Role> roles = new HashSet<>();
 
-
-    //Custom roles by using Enum Roles
-//    private Roles roles;
-    /**
-     * Translate Roles to List of SimpleGrantedAuthority
-     * @return
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream().map(
-                role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                        role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -94,5 +87,17 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", roles=" + roles +
+                // Thêm các thuộc tính khác của User vào đây nếu cần
+                '}';
     }
 }

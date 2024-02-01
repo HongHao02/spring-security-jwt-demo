@@ -3,6 +3,7 @@ package com.boarding.springsecurityjwt.Configuration;
 import com.boarding.springsecurityjwt.Models.Role;
 import com.boarding.springsecurityjwt.Models.Roles;
 import com.boarding.springsecurityjwt.Services.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +36,19 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/v1/user/**").hasAnyAuthority("ROLE_USER")
-                        .requestMatchers("/api/v1/post/chutro/create/**").hasAnyAuthority("ROLE_CHUTRO")
+                        .requestMatchers("/api/v1/posts/chutro/**").hasAnyAuthority("ROLE_CHUTRO")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider()).addFilterBefore(
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
+               )
+                .exceptionHandling(
+                        customizer -> customizer
+                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                                })
                 );
         return httpSecurity.build();
 

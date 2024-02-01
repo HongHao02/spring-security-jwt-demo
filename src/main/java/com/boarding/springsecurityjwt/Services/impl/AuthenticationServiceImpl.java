@@ -63,6 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             System.out.println("~~~UserLogin~~~> " + user.toString());
             var roles = user.getRoles();
             System.out.println("~~~UserRoles~~~> " + roles.toString());
+            System.out.println("~~~Authority~~~> " + user.getAuthorities().toString());
             var jwt = jwtService.generateToken(user);
             var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), user);
 

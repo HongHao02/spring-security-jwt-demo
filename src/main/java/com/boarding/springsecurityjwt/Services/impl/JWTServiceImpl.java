@@ -1,7 +1,9 @@
 package com.boarding.springsecurityjwt.Services.impl;
 
 import com.boarding.springsecurityjwt.Models.User;
+import com.boarding.springsecurityjwt.Repositories.UserRepository;
 import com.boarding.springsecurityjwt.Services.JWTService;
+import com.boarding.springsecurityjwt.Services.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -26,6 +28,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JWTServiceImpl implements JWTService {
 
+    private final UserService userService;
+    private final UserRepository userRepository;
     @Value("${spring.security.jwt.secret}")
     private String secretKey;
 
@@ -55,15 +59,14 @@ public class JWTServiceImpl implements JWTService {
 
     @Override
     public String generateRefreshToken(HashMap<Object, Object> objectObjectHashMap, UserDetails userDetails) {
-        String token = Jwts.builder()
+
+//        System.out.println("GenerateRefreshToken at < " + LocalDateTime.now() + " > " + token);
+        return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 604800000))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
-
-//        System.out.println("GenerateRefreshToken at < " + LocalDateTime.now() + " > " + token);
-        return token;
     }
 
     private boolean isTokenExpired(String token) {
@@ -80,10 +83,25 @@ public class JWTServiceImpl implements JWTService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Long extractId(String token) {
+        String stringID= extractClaim(token, Claims::getId);
+        long longID = 0;
+        try {
+            longID = Long.parseLong(stringID);
+            // Thực hiện các thao tác với longNumber
+        } catch (NumberFormatException e) {
+            // Xử lý ngoại lệ khi chuỗi không thể chuyển đổi thành Long
+            System.out.println("Invalid number format");
+        }
+        return longID;
+    }
+
     @Override
     public String generateToken(UserDetails userDetails) {
+        var user = userRepository.findByUsername(userDetails.getUsername()).get();
         String token = Jwts.builder()
-                .claim("authorities",userDetails.getAuthorities())
+                .claim("id", user.getId())
+                .claim("authorities", userDetails.getAuthorities())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 8000 * 60 * 24))
@@ -93,7 +111,9 @@ public class JWTServiceImpl implements JWTService {
         System.out.println("GenerateToken at < " + LocalDateTime.now() + " > " + token);
         return token;
     }
+
     private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode("413F4428472B4B6250655368566D5970337336763979244226452948404D6351"));
+//        return Keys.hmacShaKeyFor(Decoders.BASE64.decode("413F4428472B4B6250655368566D5970337336763979244226452948404D6351"));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 }

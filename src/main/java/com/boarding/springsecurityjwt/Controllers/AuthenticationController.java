@@ -43,11 +43,14 @@ public class AuthenticationController {
 
     @GetMapping("/{idUser}")
     public ResponseEntity<ResponseObject> getUserById(@PathVariable Long idUser) {
+        User user= userRepository.findById(idUser).orElse(null);
+        assert user != null;
+//        user.getRoles().size();
         return ResponseEntity.ok(new ResponseObject("ok", "Get user successfully", userRepository.findById(idUser)));
     }
 
     @PutMapping("/addRole/{idRole}/{idUser}")
-    public ResponseEntity<ResponseObject> signUpSimple(@PathVariable Integer idRole, @PathVariable Long idUser) {
+    public ResponseEntity<ResponseObject> addRoleToStudent(@PathVariable Integer idRole, @PathVariable Long idUser) {
         Role role = roleRepository.findById(idRole).orElse(null);
         User user = userRepository.findById(idUser).orElse(null);
         assert user != null;
